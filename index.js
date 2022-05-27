@@ -29,6 +29,7 @@ async function run() {
       res.send(result)
     })  //end of post ')
 
+    
     //getting all products from database
     app.get('/products',async(req,res)=>{
       const products=await productCollection.find({}).toArray();
