@@ -21,7 +21,22 @@ async function run() {
   try {
     //connect to client
     await client.connect();
-    console.log('DB connected')
+    const productCollection=client.db('menufacturar').collection('products');
+
+    //posting products to DB
+    app.post('/addproduct',async (req,res)=>{
+      const result=await productCollection.insertOne(req.body);
+      res.send(result)
+    })  //end of post ')
+
+    //getting all products from database
+    app.get('/products',async(req,res)=>{
+      const products=await productCollection.find({}).toArray();
+      res.send(products);
+    })
+
+
+
 
   } finally {
 
