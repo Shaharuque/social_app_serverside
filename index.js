@@ -37,7 +37,9 @@ async function run() {
     })
 
 
-
+    app.delete('/product',async(req,res)=>{
+      
+    })
 
   } finally {
 
