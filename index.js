@@ -22,6 +22,8 @@ async function run() {
     //connect to client
     await client.connect();
     const productCollection=client.db('menufacturar').collection('products');
+    const orderCollection=client.db('menufacturar').collection('orders');
+    const userCollection=client.db('menufacturar').collection('users');
 
     //posting products to DB
     app.post('/addproduct',async (req,res)=>{
@@ -36,9 +38,41 @@ async function run() {
       res.send(products);
     })
 
+    app.get('/product/:id',async(req,res)=>{
+      const product=await productCollection.findOne({_id:ObjectId(req.params.id)});
+      res.send(product);
+    })
+
+    //to take order data from client and store it to DB
+    app.post('/order',async(req,res)=>{
+      const order=req.body
+      const result=await orderCollection.insertOne(order);
+      res.send({
+        success: true,
+        result:result,
+      });
+    })
+
+    //get order data from DB for each user basis on his email to showcase each user orders in his dashboard
+    app.get('/order',async(req,res)=>{
+      const user_email=req.query.email;
+      const query={email:user_email}
+      //finding data
+      const result=await orderCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    //user add if user not added yet in Db or update user(PUT method)
+    app.put('/user/:email',async(req,res)=>{
+      const user_email=req.params.email;  //client side thekey url hit ar smy dynamic bhabey url ar sathey thaka email
+      const query={email:user_email}
+      const user=req.body;                //client side thekey pathano data jeita DB tey store korbo query ar opor base korey
+      const result=await userCollection.updateOne(query,{$set:user},{upsert:true});
+      res.send(result);
+    })
 
     app.delete('/product',async(req,res)=>{
-      
+
     })
 
   } finally {
