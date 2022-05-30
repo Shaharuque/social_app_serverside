@@ -74,9 +74,18 @@ async function run() {
     app.get('/order',verifyJWT,async(req,res)=>{
       const user_email=req.query.email;
       const query={email:user_email}
-      //finding data
-      const result=await orderCollection.find(query).toArray();
-      res.send(result);
+      const decodedEmail=req.decoded.email;
+      console.log('decodedemail',decodedEmail)
+      console.log('user_email',user_email)
+      //JWT token jakey dewa hoisey(decodedEmail) tar email and je ai get req kortesey tar email same holei shudu takey orders data show korabo
+      if(decodedEmail===user_email){
+        //finding data
+        const result=await orderCollection.find(query).toArray();
+        return res.send(result);
+      }
+      else{
+       return res.status(403).send({ message: 'forbidden access' });
+      }
     })
 
     //user add if user not added yet in Db or update user(PUT method)
