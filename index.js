@@ -151,7 +151,7 @@ run().catch(console.dir)
 
 //root url=>'/'
 app.get('/', (req, res) => {
-    res.send('Running doctor portal Server Perfectly Yessss!');
+    res.send('Running menufacturar Server Perfectly Yessss!');
   });
   
   //MEWAO LIFE
