@@ -139,8 +139,9 @@ async function run() {
       })
     })
 
-    app.delete('/product',async(req,res)=>{
-
+    app.delete('/deleteproduct/:id',async(req,res)=>{
+      const product=await productCollection.findOneAndDelete({_id:ObjectId(req.params.id)});
+      res.status(200).send({message: 'success'});
     })
 
   } finally {
