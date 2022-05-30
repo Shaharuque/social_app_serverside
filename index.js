@@ -14,6 +14,23 @@ app.use(cors())
 app.use(express.json())
 
 
+//Jwt token verify jeita client thekey asha token k verify korbo
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  //bairey thekey get req korley authHeader thekar proshno e uthey na tai ai case a Unauthorized access boley dibo
+  if (!authHeader) {
+    return res.status(401).send({ message: 'UnAuthorized access' });
+  }
+  const token = authHeader.split(' ')[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: 'Forbidden access' })
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 //connect to mongoDB
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.yz2oh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -53,8 +70,8 @@ async function run() {
       });
     })
 
-    //get order data from DB for each user basis on his email to showcase each user orders in his dashboard
-    app.get('/order',async(req,res)=>{
+    //get order data from DB for each user basis on his email to showcase each user orders in his dashboard but if the user don't have accesstoken then verify jwt will stop the user from seeing orders data means outside thekey get api tey hit korley shey kono user ar orders dekhtey parbey na..so security is implemented
+    app.get('/order',verifyJWT,async(req,res)=>{
       const user_email=req.query.email;
       const query={email:user_email}
       //finding data
@@ -68,7 +85,14 @@ async function run() {
       const query={email:user_email}
       const user=req.body;                //client side thekey pathano data jeita DB tey store korbo query ar opor base korey
       const result=await userCollection.updateOne(query,{$set:user},{upsert:true});
-      res.send(result);
+      //user ar info DB tey set korar por ekta access token generate korey dibo and sheita client side a pathabey
+      const token=jwt.sign({email:user_email},process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
+      res.send({
+        //user ar email jodi authenticated hoy tokhn e user k token supply dibey otherwise not
+        success: true,
+        result:result,
+        accessToken: token,
+      })
     })
 
     app.delete('/product',async(req,res)=>{
