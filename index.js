@@ -41,6 +41,7 @@ async function run() {
     const productCollection=client.db('menufacturar').collection('products');
     const orderCollection=client.db('menufacturar').collection('orders');
     const userCollection=client.db('menufacturar').collection('users');
+    const reviewCollection=client.db('menufacturar').collection('reviews');
 
     //posting products to DB
     app.post('/addproduct',async (req,res)=>{
@@ -142,6 +143,18 @@ async function run() {
     app.delete('/deleteproduct/:id',async(req,res)=>{
       const product=await productCollection.findOneAndDelete({_id:ObjectId(req.params.id)});
       res.status(200).send({message: 'success'});
+    })
+
+    //add reviews by visitor users
+    app.post('/review',async(req,res)=>{
+      const review=req.body;
+      const result=await reviewCollection.insertOne(review);
+      res.send(result);
+    })
+    //get all the reviews
+    app.get('/reviews',async(req,res)=>{
+      const reviews=await reviewCollection.find({}).toArray();
+      res.send(reviews);
     })
 
   } finally {
