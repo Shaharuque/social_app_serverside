@@ -75,8 +75,8 @@ async function run() {
       const user_email=req.query.email;
       const query={email:user_email}
       const decodedEmail=req.decoded.email;
-      console.log('decodedemail',decodedEmail)
-      console.log('user_email',user_email)
+      //console.log('decodedemail',decodedEmail)
+      //console.log('user_email',user_email)
       //JWT token jakey dewa hoisey(decodedEmail) tar email and je ai get req kortesey tar email same holei shudu takey orders data show korabo
       if(decodedEmail===user_email){
         //finding data
@@ -87,6 +87,41 @@ async function run() {
        return res.status(403).send({ message: 'forbidden access' });
       }
     })
+
+    //get all users
+    app.get('/users',async(req,res)=>{
+      const users=await userCollection.find({}).toArray();
+      res.send(users);
+    })
+    //user role jodi admin hoy tahley 'true' return korbey ai api tey client thekey hit/req korley
+    app.get('/admin/:email', async(req, res) =>{
+      const email = req.params.email;   //ai email ta basically logged in user ar email
+      const user = await userCollection.findOne({email: email});
+      const isAdmin = user.role === 'admin';
+      res.send({admin: isAdmin})
+    })  
+
+    //userCollection a kono ekta user ar info update(role:'admin' add) //make admin 
+      app.put('/user/makeAdmin/:email',verifyJWT,async(req,res)=>{
+        const email = req.params.email;
+        //site a logged in user email adress
+        const requesterEmail = req.decoded.email;
+        // const user=await userCollection.findOne({email:email});
+        console.log(email)
+        console.log(requesterEmail)
+
+        //DB ar userCollection thekey logged in user ar info find korey requesterAccount tey save korbey
+        const requesterAccount = await userCollection.findOne({ email: requesterEmail });
+        //logged in user role=admin holey tobei sey onno user k role admin assign kortey parbey
+        if(requesterAccount.role==='admin'){
+          const result=await userCollection.updateOne({email:email},{$set:{role:'admin'}});
+          res.send(result);
+        }
+        else{
+          res.status(403).send({message: 'forbidden'});
+        }
+      })
+
 
     //user add if user not added yet in Db or update user(PUT method)
     app.put('/user/:email',async(req,res)=>{
