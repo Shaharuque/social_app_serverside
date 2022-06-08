@@ -90,7 +90,7 @@ async function run() {
     })
 
     //get all users
-    app.get('/users',async(req,res)=>{
+    app.get('/all/users',async(req,res)=>{
       const users=await userCollection.find({}).toArray();
       res.send(users);
     })
@@ -99,7 +99,7 @@ async function run() {
       const user=await userCollection.findOne({email:req.params.email});
       res.send(user);
       })
-      
+
     //user role jodi admin hoy tahley 'true' return korbey ai api tey client thekey hit/req korley
     app.get('/admin/:email', async(req, res) =>{
       const email = req.params.email;   //ai email ta basically logged in user ar email
