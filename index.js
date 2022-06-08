@@ -94,6 +94,12 @@ async function run() {
       const users=await userCollection.find({}).toArray();
       res.send(users);
     })
+    //single user get
+    app.get('/user/:email',async(req,res)=>{
+      const user=await userCollection.findOne({email:req.params.email});
+      res.send(user);
+      })
+      
     //user role jodi admin hoy tahley 'true' return korbey ai api tey client thekey hit/req korley
     app.get('/admin/:email', async(req, res) =>{
       const email = req.params.email;   //ai email ta basically logged in user ar email
@@ -139,7 +145,22 @@ async function run() {
         accessToken: token,
       })
     })
+    //remove user by admin but admin can't remove other admin
+    app.delete('/user/remove/:email',verifyJWT,async(req,res)=>{
+      const email=req.params.email;
+      const requesterEmail=req.decoded.email;
+      const requesterAccount=await userCollection.findOne({email:requesterEmail});
+      const user=await userCollection.findOne({email:email});
+      if(requesterAccount.role==='admin' && user.role!=='admin'){
+        const result=await userCollection.deleteOne({email:email});
+        res.send(result);
+      }
+      else{
+        res.status(403).send({message:'forbidden'});
+      }
+    })
 
+  
     app.delete('/deleteproduct/:id',async(req,res)=>{
       const product=await productCollection.findOneAndDelete({_id:ObjectId(req.params.id)});
       res.status(200).send({message: 'success'});
