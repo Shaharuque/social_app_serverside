@@ -46,7 +46,7 @@ async function run() {
     //posting products to DB
     app.post('/addproduct',async (req,res)=>{
       const result=await productCollection.insertOne(req.body);
-      res.send(result)
+      res.status(200).send(result)
     })  //end of post ')
 
     
@@ -60,6 +60,18 @@ async function run() {
       const product=await productCollection.findOne({_id:ObjectId(req.params.id)});
       res.send(product);
     })
+
+    //deleting product from database by admin
+    app.delete('/deleteproduct/:id',async(req,res)=>{
+      const product=await productCollection.findOneAndDelete({_id:ObjectId(req.params.id)});
+      res.status(200).send({message: 'success'});
+    })
+    //updating product quantity by admin
+    app.put('/updateproduct/:id',async(req,res)=>{
+      const product=await productCollection.findOneAndUpdate({_id:ObjectId(req.params.id)},{$set:{quantity:req.body.quantity}});
+      res.status(200).send({message: 'success'});
+    })
+
 
     //to take order data from client and store it to DB
     app.post('/order',async(req,res)=>{
@@ -87,6 +99,14 @@ async function run() {
       else{
        return res.status(403).send({ message: 'forbidden access' });
       }
+    })
+    //order delete
+    app.delete('/order/:id',async(req,res)=>{
+      const result=await orderCollection.deleteOne({_id:ObjectId(req.params.id)});
+      res.status(200).send({
+        success: true,
+        result:result,
+      });
     })
 
     //get all users
@@ -161,10 +181,7 @@ async function run() {
     })
 
   
-    app.delete('/deleteproduct/:id',async(req,res)=>{
-      const product=await productCollection.findOneAndDelete({_id:ObjectId(req.params.id)});
-      res.status(200).send({message: 'success'});
-    })
+    
 
     //add reviews by visitor users
     app.post('/review',async(req,res)=>{
