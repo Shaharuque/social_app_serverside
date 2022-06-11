@@ -39,9 +39,34 @@ async function run() {
     //connect to client
     await client.connect();
     const productCollection=client.db('menufacturar').collection('products');
+    const carCollection=client.db('menufacturar').collection('cars');
     const orderCollection=client.db('menufacturar').collection('orders');
     const userCollection=client.db('menufacturar').collection('users');
     const reviewCollection=client.db('menufacturar').collection('reviews');
+
+    //posting Cars to DB car collection
+    app.post('/addcars',verifyJWT, async (req, res) => {
+      const car = req.body;
+      // const decodedEmail=req.decoded.email;
+      const result=await carCollection.insertOne(car);
+      if(result){
+        res.status(200).send(result)
+      }
+      else{
+        res.status(403).send({message:'Unable to add car'})
+      }
+    });
+    //getting all cars api
+    app.get('/getcars',verifyJWT, async (req, res) => {
+      const result=await carCollection.find({}).toArray();
+      if(result){
+        res.status(200).send(result)
+      }
+      else{
+        res.status(403).send({message:'Unable to get cars'})
+      }
+    });
+
 
     //posting products to DB
     app.post('/addproduct',async (req,res)=>{
@@ -157,7 +182,7 @@ async function run() {
       const user=req.body;                //client side thekey pathano data jeita DB tey store korbo query ar opor base korey
       const result=await userCollection.updateOne(query,{$set:user},{upsert:true});
       //user ar info DB tey set korar por ekta access token generate korey dibo and sheita client side a pathabey
-      const token=jwt.sign({email:user_email},process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
+      const token=jwt.sign({email:user_email},process.env.ACCESS_TOKEN_SECRET,{expiresIn:'24h'})
       res.send({
         //user ar email jodi authenticated hoy tokhn e user k token supply dibey otherwise not
         success: true,
