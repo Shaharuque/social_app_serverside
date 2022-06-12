@@ -67,6 +67,18 @@ async function run() {
       }
     });
 
+    //get particular car basis on carid which is come from client side
+    app.get('/getcar/:carid',verifyJWT, async (req, res) => {
+      const carid=req.params.carid;
+      const result=await carCollection.findOne({_id:ObjectId(carid)});
+      if(result){
+        res.status(200).send(result)
+      }
+      else{
+        res.status(403).send({message:'Unable to get car'})
+      }
+    });
+
 
     //posting products to DB
     app.post('/addproduct',async (req,res)=>{
@@ -102,10 +114,15 @@ async function run() {
     app.post('/order',async(req,res)=>{
       const order=req.body
       const result=await orderCollection.insertOne(order);
-      res.send({
+     if(result){
+      res.status(200).send({
         success: true,
         result:result,
       });
+      }
+      else{
+        res.status(403).send({message:'Unable to add order'})
+      }
     })
 
     //get order data from DB for each user basis on his email to showcase each user orders in his dashboard but if the user don't have accesstoken then verify jwt will stop the user from seeing orders data means outside thekey get api tey hit korley shey kono user ar orders dekhtey parbey na..so security is implemented
