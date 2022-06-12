@@ -57,7 +57,7 @@ async function run() {
       }
     });
     //getting all cars api
-    app.get('/getcars',verifyJWT, async (req, res) => {
+    app.get('/getcars', async (req, res) => {
       const result=await carCollection.find({}).toArray();
       if(result){
         res.status(200).send(result)
