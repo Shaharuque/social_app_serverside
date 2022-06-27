@@ -46,6 +46,65 @@ async function run() {
     const commentCollection = client.db('socialapp').collection('comments');
     const likedOrDislikedCollection = client.db('socialapp').collection('likedOrDisliked')
 
+
+
+    //---------------------Social Micro Blogging APP API ---------------------------------------------------
+
+    //add post by visitor users
+    app.post('/review', async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    })
+    //get all the posts
+    app.get('/reviews', async (req, res) => {
+      const reviews = await reviewCollection.find({}).toArray();
+      res.send(reviews);
+    })
+
+    //liked and disliked post update
+    app.patch('/postcondition/:id', async (req, res) => {
+      const post = req.body
+      const post_id=req.params.id
+      const filter = {postId:post_id, userName:post.userName};
+      const options = { upsert: true };
+      //particular id wise user ar jei jei field/property update kortey chai 
+      const updateDoc = {
+        $set: {
+          userName: post.userName,
+          postId: post.postId,
+          liked:parseInt(post.liked),
+          disliked: parseInt(post.disliked)
+        },
+      };
+
+      const result = await likedOrDislikedCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+    })
+    //each postId basis a like/dislike get
+    app.get('/count_liked_disliked/:id',async(req,res)=>{
+      const postedid = req.params.id
+      const result = await likedOrDislikedCollection.find({ postId: postedid }).toArray();  //database ar postId==postedid(query from client) shei data  store hobey comments a
+      res.send(result);
+    })
+
+    //add comments by visitor users
+    app.post('/comment', async (req, res) => {
+      const comment = req.body;
+      const result = await commentCollection.insertOne(comment);
+      res.send(result);
+    })
+
+    //particular postId ar basis a sob comment get korar api
+    app.get('/comments/:id', async (req, res) => {
+      const postedid = req.params.id
+      //console.log(postedid)
+      const comments = await commentCollection.find({ postId: postedid }).toArray();  //database ar postId==postedid(query from client) shei data  store hobey comments a
+      res.send(comments);
+    })
+
+    //-------------------//
+
     //posting Cars to DB car collection
     app.post('/addcars', verifyJWT, async (req, res) => {
       const car = req.body;
@@ -225,60 +284,7 @@ async function run() {
     })
 
 
-    //Social App API ---------------------------------------------------
 
-    //add reviews by visitor users
-    app.post('/review', async (req, res) => {
-      const review = req.body;
-      const result = await reviewCollection.insertOne(review);
-      res.send(result);
-    })
-    //get all the reviews
-    app.get('/reviews', async (req, res) => {
-      const reviews = await reviewCollection.find({}).toArray();
-      res.send(reviews);
-    })
-
-    //liked and disliked post
-    app.patch('/postcondition/:id', async (req, res) => {
-      const post = req.body
-      const post_id=req.params.id
-      const filter = {postId:post_id, userName:post.userName};
-      const options = { upsert: true };
-      //particular id wise user ar jei jei field/property update kortey chai 
-      const updateDoc = {
-        $set: {
-          userName: post.userName,
-          postId: post.postId,
-          liked:parseInt(post.liked),
-          disliked: parseInt(post.disliked)
-        },
-      };
-
-      const result = await likedOrDislikedCollection.updateOne(filter, updateDoc, options);
-      res.send(result)
-    })
-    //each postId basis a like/dislike get
-    app.get('/count_liked_disliked/:id',async(req,res)=>{
-      const postedid = req.params.id
-      const result = await likedOrDislikedCollection.find({ postId: postedid }).toArray();  //database ar postId==postedid(query from client) shei data  store hobey comments a
-      res.send(result);
-    })
-
-    //add comments by visitor users
-    app.post('/comment', async (req, res) => {
-      const comment = req.body;
-      const result = await commentCollection.insertOne(comment);
-      res.send(result);
-    })
-
-    //particular postId ar basis a sob comment get korar api
-    app.get('/comments/:id', async (req, res) => {
-      const postedid = req.params.id
-      //console.log(postedid)
-      const comments = await commentCollection.find({ postId: postedid }).toArray();  //database ar postId==postedid(query from client) shei data  store hobey comments a
-      res.send(comments);
-    })
 
 
   } finally {
@@ -289,7 +295,7 @@ run().catch(console.dir)
 
 //root url=>'/'
 app.get('/', (req, res) => {
-  res.send('Running hamburg menufacturar Server Perfectly Yessss!');
+  res.send('Running social app Server Perfectly Yessss!');
 });
 
 //MEWAO LIFE
